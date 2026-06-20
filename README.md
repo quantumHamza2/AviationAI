@@ -1,4 +1,4 @@
-# ✈️ AeroMind
+# AeroMind
 
 ### AI-Powered Predictive Aviation Operations & Airspace Intelligence Platform
 
@@ -14,13 +14,13 @@ AeroMind is a full-stack aviation intelligence platform that gives you a bird's-
 
 **What you can do:**
 
-- 🛩️ **Track flights in real-time** — See live aircraft positions on an interactive world map
-- 🧠 **Predict delays with AI** — Our XGBoost model estimates delay risk before you fly (91% accuracy)
-- ⛈️ **Check weather conditions** — Plain-English weather reports for 15+ major airports worldwide
-- 💬 **Ask the AI Copilot** — Natural language assistant ("Will my flight from Chicago be delayed?")
-- 📊 **Explore analytics** — Airline comparisons, route analysis, historical trends
-- 🔔 **Get notified** — Real-time alerts for weather warnings, delay spikes, and system events
-- 🏗️ **Simulate operations** — Digital twin airport simulation with gate and runway status
+- **Track flights in real-time** — See live aircraft positions on an interactive world map
+- **Predict delays with AI** — Our XGBoost model estimates delay risk before you fly (91% accuracy)
+- **Check weather conditions** — Plain-English weather reports for 15+ major airports worldwide
+- **Ask the AI Copilot** — Natural language assistant ("Will my flight from Chicago be delayed?")
+- **Explore analytics** — Airline comparisons, route analysis, historical trends
+- **Get notified** — Real-time alerts for weather warnings, delay spikes, and system events
+- **Simulate operations** — Digital twin airport simulation with gate and runway status
 
 ---
 
