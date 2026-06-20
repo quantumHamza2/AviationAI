@@ -1,0 +1,76 @@
+{
+  "model_type": "XGBClassifier",
+  "version": "v1.0",
+  "trained_at": "2026-05-27T09:09:19.974569",
+  "n_samples": 50000,
+  "n_features": 22,
+  "features": [
+    "month",
+    "day_of_week",
+    "day_of_month",
+    "is_weekend",
+    "is_holiday",
+    "quarter",
+    "hour",
+    "is_peak_hour",
+    "is_red_eye",
+    "origin_freq",
+    "origin_freq_log",
+    "dest_freq",
+    "dest_freq_log",
+    "airline_idx",
+    "airline_delay_rate",
+    "distance",
+    "distance_log",
+    "is_short_haul",
+    "is_long_haul",
+    "has_weatherdelay",
+    "has_carrierdelay",
+    "has_nasdelay"
+  ],
+  "roc_auc": 0.9133021143205602,
+  "cv_auc_mean": 0.912912714726722,
+  "cv_auc_std": 0.0030333513192276956,
+  "top_features": [
+    [
+      "has_carrierdelay",
+      "0.48486665"
+    ],
+    [
+      "has_weatherdelay",
+      "0.29555404"
+    ],
+    [
+      "has_nasdelay",
+      "0.18885022"
+    ],
+    [
+      "is_peak_hour",
+      "0.004253612"
+    ],
+    [
+      "month",
+      "0.0021469754"
+    ],
+    [
+      "is_long_haul",
+      "0.001786026"
+    ],
+    [
+      "hour",
+      "0.0015764585"
+    ],
+    [
+      "is_holiday",
+      "0.00155092"
+    ],
+    [
+      "distance_log",
+      "0.0014816945"
+    ],
+    [
+      "airline_delay_rate",
+      "0.0014775037"
+    ]
+  ]
+}
