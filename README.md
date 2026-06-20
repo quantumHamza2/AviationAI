@@ -6,6 +6,10 @@
   <strong>Real-time flight tracking · AI delay predictions · Weather intelligence · Interactive dashboards</strong>
 </p>
 
+<p align="center">
+  <a href="https://aviation-ai-hamza.vercel.app" target="_blank"><strong>🚀 Live Demo</strong></a>
+</p>
+
 ---
 
 ## What is AeroMind?
