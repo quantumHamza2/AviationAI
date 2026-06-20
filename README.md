@@ -6,8 +6,6 @@
   <strong>Real-time flight tracking · AI delay predictions · Weather intelligence · Interactive dashboards</strong>
 </p>
 
-> **Version 3.0 — Phase 3** | Built with Next.js 16, FastAPI, XGBoost, and Recharts
-
 ---
 
 ## What is AeroMind?
@@ -292,31 +290,14 @@ docker-compose up --build
 
 ---
 
-## Changelog
+## Features Overview
 
-### v3.0 — Phase 3 (Current)
-- ✅ Notification Center with bell icon, filter tabs, and severity badges
-- ✅ Sparkline micro-charts in KPI cards
-- ✅ Trend indicators (▲/▼) on all metrics
-- ✅ AI Copilot expanded to 15 airports, 12 airlines
-- ✅ Layman-friendly UX — plain English everywhere, no aviation jargon
-- ✅ City name lookups ("weather in Chicago" → ORD)
-- ✅ ActivityFeed with severity filtering (Urgent / Alerts / Info)
-- ✅ Human-readable KPI labels and descriptions
-
-### v2.0 — Phase 2
-- ✅ AI Copilot with local NLP fallback engine
-- ✅ Digital Twin airport simulation (canvas-based)
-- ✅ Advanced Analytics page (Recharts dashboards)
-- ✅ Interactive globe with route arcs and weather overlays
-- ✅ React hook refactoring and lint cleanup
-
-### v1.0 — Phase 1
-- ✅ Full-stack architecture (Next.js + FastAPI)
-- ✅ XGBoost delay prediction model (91% AUC)
-- ✅ 8 REST API endpoints + WebSocket streaming
-- ✅ Dashboard with animated KPIs and charts
-- ✅ Docker orchestration with PostgreSQL and Redis
+- **Real-Time Flight Tracking**: Track global flights with WebSockets and dynamic mapping features.
+- **AI-Powered Predictions**: Predict arrival delays using a custom XGBoost model trained on historical data.
+- **Weather Analysis**: Fetch, parse, and score aviation weather risks dynamically.
+- **AI Copilot**: Interact with flight data using a conversational assistant interface.
+- **Digital Twin Simulation**: View airport gate/runway allocations and operations inside a canvas-based simulation.
+- **Advanced Analytics**: Compare airlines, analyze major route bottlenecks, and view 30-day performance trends.
 
 ---
 
@@ -327,5 +308,5 @@ MIT License — See [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  <strong>AeroMind v3.0</strong> — Built with ❤️ for aviation intelligence
+  <strong>AeroMind</strong> — Built with ❤️ for aviation intelligence
 </p>
