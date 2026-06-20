@@ -201,7 +201,7 @@ export default function AnalyticsPage() {
 
           {/* Footer */}
           <div className="text-center py-4 border-t border-white/5">
-            <p className="text-[11px] text-[#64748b]">AeroMind v3.0 · Advanced Analytics · Phase 3</p>
+            <p className="text-[11px] text-[#64748b]">AeroMind · Advanced Analytics</p>
           </div>
         </div>
       </main>

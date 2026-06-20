@@ -88,7 +88,7 @@ export default function Dashboard() {
           {/* Footer */}
           <div className="text-center py-4 border-t border-white/5">
             <p className="text-[11px] text-[#64748b]">
-              AeroMind v3.0 · AI-Powered Predictive Aviation Operations Platform · Phase 3
+              AeroMind · Predictive Aviation Operations Platform
             </p>
           </div>
         </div>

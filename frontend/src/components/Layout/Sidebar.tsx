@@ -116,7 +116,7 @@ export default function Sidebar() {
       {/* Version */}
       {!collapsed && (
         <div className="px-5 pb-4">
-          <p className="text-[10px] text-[#64748b]">AeroMind v3.0 · Phase 3</p>
+          <p className="text-[10px] text-[#64748b]">AeroMind Platform</p>
         </div>
       )}
     </motion.aside>
