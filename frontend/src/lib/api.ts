@@ -121,8 +121,8 @@ export interface WeatherRisk {
 
 export interface DelayPrediction {
   delay_probability: number;
-  expected_delay_minutes: number;
-  confidence: number;
+  expected_delay_minutes: number | null;
+  confidence: number | null;
   risk_level: string;
   top_factors: Array<{
     feature: string;

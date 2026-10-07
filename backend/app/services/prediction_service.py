@@ -2,11 +2,11 @@
 AeroMind Prediction Service — ML inference for flight delay prediction.
 Loads trained models, engineers features, and returns explainable predictions.
 """
-import os
 import logging
 import numpy as np
-from typing import Optional, Dict, List
-from datetime import datetime
+from typing import Dict, List
+from app.services.schedule_features import FEATURE_NAMES, schedule_features
+from pathlib import Path
 from app.config import settings
 from app.models.schemas import (
     DelayPredictionRequest, DelayPredictionResponse,
@@ -27,21 +27,6 @@ except ImportError:
 class PredictionService:
     """Flight delay prediction engine with SHAP explainability."""
 
-    # Major airlines for encoding
-    AIRLINES = [
-        "AA", "DL", "UA", "WN", "B6", "AS", "NK", "F9", "HA", "G4",
-        "SY", "QX", "OH", "YV", "OO", "MQ", "YX", "9E", "EV", "ZW",
-    ]
-
-    # Top 50 busiest airports
-    AIRPORTS = [
-        "KATL", "KLAX", "KORD", "KDFW", "KDEN", "KJFK", "KSFO", "KLAS", "KSEA", "KMCO",
-        "KEWR", "KBOS", "KMSP", "KPHL", "KLGA", "KFLL", "KDTW", "KSLC", "KSAN", "KDCA",
-        "KBWI", "KTPA", "KPDX", "KSTL", "KHOU", "KBNA", "KAUS", "KOAK", "KMCI", "KRDU",
-        "KCLT", "KMDW", "KSMF", "KSJC", "KSAT", "KPIT", "KRSW", "KCVG", "KCMH", "KIND",
-        "EGLL", "LFPG", "EDDF", "EHAM", "OMDB", "RJTT", "WSSS", "VHHH", "YSSY", "VIDP",
-    ]
-
     def __init__(self):
         self.model = None
         self.model_version = "v1.0-mock"
@@ -52,47 +37,27 @@ class PredictionService:
         if not ML_AVAILABLE:
             return
 
-        model_path = os.path.join(settings.model_path, "delay_model.joblib")
+        model_dir = Path(settings.model_path)
+        if not model_dir.is_absolute():
+            model_dir = Path(__file__).resolve().parents[3] / model_dir
+        model_path = model_dir / "delay_model_v2.joblib"
         if os.path.exists(model_path):
             try:
                 self.model = joblib.load(model_path)
-                self.model_version = "v1.0"
+                if list(self.model.feature_names_in_) != FEATURE_NAMES:
+                    raise ValueError("Model feature contract does not match schedule features")
+                self.model_version = "v2.0-synthetic"
                 logger.info("Loaded delay prediction model from %s", model_path)
             except Exception as e:
+                self.model = None
                 logger.error("Failed to load model: %s", e)
         else:
             logger.info("No trained model found at %s. Using mock predictions.", model_path)
 
     def _engineer_features(self, request: DelayPredictionRequest) -> Dict[str, float]:
         """Transform prediction request into model features."""
-        try:
-            dt = datetime.fromisoformat(request.scheduled_departure.replace("Z", "+00:00"))
-        except Exception:
-            dt = datetime.now()
-
-        features = {
-            "hour": dt.hour,
-            "day_of_week": request.day_of_week if request.day_of_week is not None else dt.weekday(),
-            "month": request.month if request.month is not None else dt.month,
-            "is_weekend": 1 if dt.weekday() >= 5 else 0,
-            "is_holiday": 0,  # Simplified; would use holiday calendar
-            "is_peak_hour": 1 if 6 <= dt.hour <= 9 or 16 <= dt.hour <= 20 else 0,
-            "is_red_eye": 1 if dt.hour <= 5 or dt.hour >= 22 else 0,
-        }
-
-        # Airport encoding (simple ordinal for now)
-        origin_idx = self.AIRPORTS.index(request.origin) if request.origin in self.AIRPORTS else len(self.AIRPORTS)
-        dest_idx = self.AIRPORTS.index(request.destination) if request.destination in self.AIRPORTS else len(self.AIRPORTS)
-        features["origin_idx"] = origin_idx
-        features["dest_idx"] = dest_idx
-        features["is_hub_origin"] = 1 if origin_idx < 10 else 0
-        features["is_hub_dest"] = 1 if dest_idx < 10 else 0
-
-        # Airline encoding
-        airline = request.airline or "XX"
-        features["airline_idx"] = self.AIRLINES.index(airline) if airline in self.AIRLINES else len(self.AIRLINES)
-
-        return features
+        return schedule_features(request.origin, request.destination, request.airline,
+                                 request.scheduled_departure, request.day_of_week, request.month)
 
     def predict_delay(self, request: DelayPredictionRequest) -> DelayPredictionResponse:
         """Generate a delay prediction for a flight."""
@@ -106,9 +71,10 @@ class PredictionService:
     def _model_predict(self, features: Dict, request: DelayPredictionRequest) -> DelayPredictionResponse:
         """Run actual model inference."""
         try:
-            feature_array = np.array([list(features.values())])
+            import pandas as pd
+            feature_array = pd.DataFrame([features], columns=FEATURE_NAMES)
             prob = float(self.model.predict_proba(feature_array)[0][1])
-            delay_min = float(self.model.predict(feature_array)[0]) if hasattr(self.model, 'predict') else prob * 45
+            delay_min = None  # A binary classifier does not predict minutes.
 
             # SHAP explanation
             top_factors = self._compute_shap(feature_array, features)
@@ -117,12 +83,12 @@ class PredictionService:
 
             return DelayPredictionResponse(
                 delay_probability=round(prob, 3),
-                expected_delay_minutes=round(max(0, delay_min), 1),
-                confidence=round(0.85, 2),
+                expected_delay_minutes=None,
+                confidence=None,
                 risk_level=risk_level,
                 top_factors=top_factors,
                 model_version=self.model_version,
-                explanation=f"Based on historical patterns, this flight has a {prob*100:.1f}% chance of delay.",
+                explanation=f"Synthetic-data demonstration: estimated delay probability {prob*100:.1f}%. Not validated on real flights.",
             )
         except Exception as e:
             logger.error("Model prediction failed: %s", e)
@@ -173,11 +139,11 @@ class PredictionService:
         return DelayPredictionResponse(
             delay_probability=round(prob, 3),
             expected_delay_minutes=round(max(0, delay_min), 1),
-            confidence=round(0.78, 2),
+            confidence=None,
             risk_level=risk_level,
             top_factors=factors,
             model_version="v1.0-mock",
-            explanation=f"Based on historical patterns for {request.origin}→{request.destination}, "
+            explanation=f"Illustrative simulation (no trained model) for {request.origin}→{request.destination}: "
                         f"this flight has a {prob*100:.1f}% probability of delay (~{delay_min:.0f} min).",
         )
 
@@ -190,6 +156,9 @@ class PredictionService:
             if isinstance(shap_values, list):
                 shap_values = shap_values[1]  # Class 1 (delayed)
 
+            shap_values = np.asarray(shap_values)
+            if shap_values.ndim == 3:
+                shap_values = shap_values[:, :, 1]
             feature_names = list(features.keys())
             contributions = []
             for i, name in enumerate(feature_names):
