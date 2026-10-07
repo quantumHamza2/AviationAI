@@ -1,0 +1,67 @@
+{
+  "model_type": "XGBClassifier",
+  "version": "v2.0-synthetic",
+  "data_source": "synthetic",
+  "limitation": "Not evidence of performance on real flights",
+  "trained_at": "2026-10-07T20:49:31.282812",
+  "n_samples": 50000,
+  "n_features": 11,
+  "features": [
+    "hour",
+    "day_of_week",
+    "month",
+    "is_weekend",
+    "is_peak_hour",
+    "is_red_eye",
+    "origin_idx",
+    "dest_idx",
+    "is_hub_origin",
+    "is_hub_dest",
+    "airline_idx"
+  ],
+  "roc_auc": 0.6004342163213237,
+  "cv_auc_mean": 0.5996399975630627,
+  "cv_auc_std": 0.006794180801951662,
+  "top_features": [
+    [
+      "is_peak_hour",
+      "0.2983485"
+    ],
+    [
+      "month",
+      "0.10697721"
+    ],
+    [
+      "hour",
+      "0.08562979"
+    ],
+    [
+      "origin_idx",
+      "0.06975598"
+    ],
+    [
+      "is_red_eye",
+      "0.06930471"
+    ],
+    [
+      "dest_idx",
+      "0.06739797"
+    ],
+    [
+      "day_of_week",
+      "0.067262314"
+    ],
+    [
+      "airline_idx",
+      "0.06516878"
+    ],
+    [
+      "is_weekend",
+      "0.062606"
+    ],
+    [
+      "is_hub_origin",
+      "0.055159565"
+    ]
+  ]
+}

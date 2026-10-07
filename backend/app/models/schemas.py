@@ -1,7 +1,7 @@
 """
 AeroMind Pydantic Schemas — Request/Response models for the API.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -186,6 +186,14 @@ class DelayPredictionRequest(BaseModel):
     day_of_week: Optional[int] = Field(None, ge=0, le=6)
     month: Optional[int] = Field(None, ge=1, le=12)
 
+    @field_validator("scheduled_departure")
+    @classmethod
+    def valid_departure(cls, value):
+        datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if "T" not in value and " " not in value:
+            raise ValueError("Include a departure time as well as a date")
+        return value
+
 
 class FeatureContribution(BaseModel):
     """Single feature's contribution to a prediction (for SHAP)."""
@@ -198,8 +206,8 @@ class FeatureContribution(BaseModel):
 class DelayPredictionResponse(BaseModel):
     """Output from the flight delay prediction engine."""
     delay_probability: float = Field(..., ge=0, le=1, description="Probability of delay")
-    expected_delay_minutes: float = Field(0, description="Predicted delay in minutes")
-    confidence: float = Field(0, ge=0, le=1)
+    expected_delay_minutes: Optional[float] = Field(None, description="Predicted delay in minutes")
+    confidence: Optional[float] = Field(None, ge=0, le=1)
     risk_level: str = Field("low", description="low, medium, high, critical")
     top_factors: List[FeatureContribution] = Field(default_factory=list)
     model_version: str = "v1.0"

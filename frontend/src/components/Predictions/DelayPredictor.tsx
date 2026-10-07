@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { predictionsApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { BrainCircuit, Loader2, ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
 
 interface PredictionResult {
   delay_probability: number;
-  expected_delay_minutes: number;
-  confidence: number;
+  expected_delay_minutes: number | null;
+  confidence: number | null;
   risk_level: string;
   explanation: string;
   top_factors: Array<{
@@ -37,32 +38,21 @@ export default function DelayPredictor() {
   const [origin, setOrigin] = useState("KJFK");
   const [destination, setDestination] = useState("EGLL");
   const [airline, setAirline] = useState("BA");
+  const [departure, setDeparture] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
 
   const predict = async () => {
     setLoading(true);
-    // Simulate API call with mock prediction
-    await new Promise((r) => setTimeout(r, 1500));
-
-    const seed = (origin + destination + airline).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-    const prob = Math.min(0.95, Math.max(0.08, 0.3 + ((seed % 50) - 25) / 100));
-    const mins = Math.round(prob * 35 + (seed % 20));
-
-    setResult({
-      delay_probability: prob,
-      expected_delay_minutes: mins,
-      confidence: 0.84,
-      risk_level: prob > 0.7 ? "high" : prob > 0.4 ? "medium" : "low",
-      explanation: `Based on historical patterns for ${origin}→${destination}, this ${airline} flight has a ${(prob * 100).toFixed(1)}% probability of delay (~${mins} min).`,
-      top_factors: [
-        { feature: "Time of Day", contribution: 0.15, direction: "increases_delay" },
-        { feature: "Airport Congestion", contribution: 0.12, direction: "increases_delay" },
-        { feature: "Weather Conditions", contribution: 0.08, direction: "increases_delay" },
-        { feature: "Day of Week", contribution: -0.04, direction: "decreases_delay" },
-        { feature: "Airline Performance", contribution: -0.06, direction: "decreases_delay" },
-      ],
-    });
+    setError("");
+    setResult(null);
+    try {
+      const response = await predictionsApi.predictDelay({ origin, destination, airline, scheduled_departure: departure });
+      setResult(response.data);
+    } catch {
+      setError("Prediction unavailable. Check the departure time and backend connection, then retry.");
+    }
     setLoading(false);
   };
 
@@ -78,6 +68,7 @@ export default function DelayPredictor() {
         <h3 className="text-sm font-semibold text-[#f1f5f9]">AI Delay Predictor</h3>
       </div>
 
+      <p className="text-xs text-[#94a3b8] mb-4">Research prototype: synthetic model or explicitly labelled simulation; not validated for travel decisions.</p>
       {/* Input form */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div>
@@ -112,9 +103,12 @@ export default function DelayPredictor() {
         </div>
       </div>
 
+      <label htmlFor="departure" className="text-xs text-[#94a3b8] block mb-2">Scheduled departure (origin local time)</label>
+      <input id="departure" type="datetime-local" value={departure} onChange={e => setDeparture(e.target.value)} className="w-full mb-4 p-2 rounded bg-white/5 text-[#f1f5f9]" />
+      {error && <p role="alert" className="text-sm text-red-400 mb-3">{error}</p>}
       <button
         onClick={predict}
-        disabled={loading}
+        disabled={loading || !departure}
         className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] text-white text-sm font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
       >
         {loading ? (
@@ -163,7 +157,7 @@ export default function DelayPredictor() {
               </div>
               <div>
                 <p className="text-sm text-[#f1f5f9] mb-1">
-                  Expected delay: <span className="font-mono-data text-[#f59e0b]">{result.expected_delay_minutes} min</span>
+                  Expected delay: <span className="font-mono-data text-[#f59e0b]">{result.expected_delay_minutes === null ? "Not estimated" : `${result.expected_delay_minutes} min (simulation)`}</span>
                 </p>
                 <p className="text-xs text-[#94a3b8]">{result.explanation}</p>
                 <div className="flex items-center gap-2 mt-2">
@@ -174,7 +168,7 @@ export default function DelayPredictor() {
                     {result.risk_level} risk
                   </span>
                   <span className="text-[10px] text-[#64748b] font-mono-data">
-                    {Math.round(result.confidence * 100)}% confidence
+                    {result.confidence === null ? "Confidence not calibrated" : `${Math.round(result.confidence * 100)}% confidence`}
                   </span>
                 </div>
               </div>
@@ -182,7 +176,7 @@ export default function DelayPredictor() {
 
             {/* SHAP factors */}
             <div>
-              <h4 className="text-xs font-semibold text-[#94a3b8] mb-2">Key Factors (SHAP Analysis)</h4>
+              <h4 className="text-xs font-semibold text-[#94a3b8] mb-2">Contributing Factors (model or simulation)</h4>
               <div className="space-y-1.5">
                 {result.top_factors.map((f, i) => (
                   <div key={f.feature} className="flex items-center gap-2">

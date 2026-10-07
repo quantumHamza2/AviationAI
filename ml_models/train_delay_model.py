@@ -1,8 +1,8 @@
 """
 AeroMind Delay Model Training Pipeline
 
-Generates synthetic training data (based on realistic distributions from BTS),
-trains XGBoost + LightGBM ensemble, and exports the model with SHAP analysis.
+Generates synthetic training data (using hand-written illustrative distributions),
+trains an XGBoost demonstration classifier, and exports the model with SHAP analysis.
 
 Usage: python -m ml_models.train_delay_model
 """
@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def generate_synthetic_data(n_samples: int = 50000) -> pd.DataFrame:
     """
-    Generate realistic synthetic flight data based on BTS distributions.
+    Generate realistic synthetic flight data using illustrative distributions, not measured BTS statistics.
     This lets the model work without requiring a Kaggle download.
     """
     np.random.seed(42)
@@ -129,7 +129,7 @@ def train_model():
         scale_pos_weight=y_train.value_counts()[0] / y_train.value_counts()[1],
         random_state=42,
         eval_metric="auc",
-        use_label_encoder=False,
+        n_jobs=2,
     )
 
     model.fit(
@@ -163,14 +163,16 @@ def train_model():
     output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "trained")
     os.makedirs(output_dir, exist_ok=True)
 
-    model_path = os.path.join(output_dir, "delay_model.joblib")
+    model_path = os.path.join(output_dir, "delay_model_v2.joblib")
     joblib.dump(model, model_path)
     logger.info("\nModel saved to %s", model_path)
 
     # Save metadata
     metadata = {
         "model_type": "XGBClassifier",
-        "version": "v1.0",
+        "version": "v2.0-synthetic",
+        "data_source": "synthetic",
+        "limitation": "Not evidence of performance on real flights",
         "trained_at": datetime.utcnow().isoformat(),
         "n_samples": len(df),
         "n_features": len(feature_names),
@@ -182,7 +184,7 @@ def train_model():
     }
 
     import json
-    meta_path = os.path.join(output_dir, "model_metadata.json")
+    meta_path = os.path.join(output_dir, "model_metadata_v2.json")
     with open(meta_path, "w") as f:
         json.dump(metadata, f, indent=2, default=str)
     logger.info("Metadata saved to %s", meta_path)

@@ -1,3 +1,5 @@
+> **Prototype status:** The dashboard includes simulated data and a rule-based copilot. It is not a validated aviation decision system. The original v1 metrics are invalidated by target leakage and are retained below only as historical results. Retrain v2 before enabling model inference; v2 uses the same schedule-only feature contract in training and serving. A classifier supplies probability, not delay duration or calibrated confidence.
+
 # AeroMind
 
 ### AI-Powered Predictive Aviation Operations & Airspace Intelligence Platform
@@ -19,7 +21,7 @@ AeroMind is a full-stack aviation intelligence platform that gives you a bird's-
 **What you can do:**
 
 - **Track flights in real-time** — See live aircraft positions on an interactive world map
-- **Predict delays with AI** — Our XGBoost model estimates delay risk before you fly (91% accuracy)
+- **Predict delays with AI** — Our XGBoost model estimates delay risk before you fly (synthetic-data demonstration)
 - **Check weather conditions** — Plain-English weather reports for 15+ major airports worldwide
 - **Ask the AI Copilot** — Natural language assistant ("Will my flight from Chicago be delayed?")
 - **Explore analytics** — Airline comparisons, route analysis, historical trends
@@ -100,7 +102,7 @@ graph TB
 ### 1. Clone and configure
 
 ```bash
-git clone <repo-url> && cd "Aviation AI"
+git clone https://github.com/quantumHamza2/AviationAI.git && cd AviationAI
 cp .env.example .env
 # Edit .env with your API keys — all are optional for development
 ```
@@ -136,7 +138,7 @@ pip install xgboost scikit-learn pandas numpy joblib
 python -m ml_models.train_delay_model
 ```
 
-Outputs `ml_models/trained/delay_model.joblib` (~91% AUC).
+Outputs `ml_models/trained/delay_model_v2.joblib`. Evaluate the generated metadata; synthetic scores do not establish real-world accuracy.
 
 ---
 
@@ -243,9 +245,9 @@ The delay prediction model uses **XGBoost** trained on 50,000 synthetic records 
 
 | Metric           | Value           |
 |------------------|-----------------|
-| ROC AUC          | **0.913**       |
+| Historical v1 ROC AUC (invalidated) | 0.913 |
 | Accuracy         | **86%**         |
-| 5-Fold CV AUC   | 0.913 ± 0.003  |
+| Historical v1 CV (invalidated) | 0.913 ± 0.003 |
 
 **Top predictive factors:**
 1. Carrier delay history (48.5%)
@@ -314,3 +316,13 @@ MIT License — See [LICENSE](LICENSE) for details.
 <p align="center">
   <strong>AeroMind</strong> — Built with ❤️ for aviation intelligence
 </p>
+
+### Regression checks
+
+Run `python -m unittest discover -s tests` from the repository root. Model training requires the backend ML dependencies. Do not load joblib artifacts from untrusted sources.
+
+### Corrected v2 evaluation
+
+A local run on 50,000 synthetic records produced holdout ROC AUC **0.6004** and five-fold CV AUC **0.5996 ± 0.0068**. These modest scores replace the invalidated v1 claim; they are not real-flight validation. See `ml_models/trained/model_metadata_v2.json`. The v2 artifact is generated locally, not shipped as an opaque pickle. The predictor form now calls the API with a selected departure time and surfaces connection failures instead of silently fabricating a result.
+
+For macOS XGBoost, an OpenMP runtime is required. Use Python 3.11 with the pinned backend dependencies for the project's declared environment. The recorded local evaluation used newer installed libraries; exact scores can differ by version.
